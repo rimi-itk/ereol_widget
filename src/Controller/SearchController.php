@@ -156,7 +156,6 @@ class SearchController {
     return [
       'page' => $page,
       'count' => (int) $result->numTotalCollections,
-      'totalCount' => (int) $result->numTotalObjects,
       // 'conditions' => $conditions,
       // 'query' => $query,
       // 'url' => isset($_GET['url']) ? $_GET['url'] : null,.
@@ -166,19 +165,17 @@ class SearchController {
   /**
    * Get links.
    */
-  private function getLinks(\TingClientSearchResult $result, $page, $results_per_page) {
+  private function getLinks(\TingClientSearchResult $result, $page) {
     $query = drupal_get_query_parameters();
-    $numberOfPages = ceil($result->numTotalObjects / $results_per_page);
 
     $links['self'] = $this->getUrl($query);
-    if ($page < $numberOfPages) {
+    if (isset($result->more) && $result->more) {
       $links['next'] = $this->getUrl(['page' => $page + 1]);
     }
     if ($page > 1) {
+      $links['prev'] = ($page > 2) ? $this->getUrl(['page' => $page - 1]) : $this->getUrl([], ['page']);
       $links['first'] = $this->getUrl([], ['page']);
-      $links['prev'] = ($page > 2) ? $this->getUrl(['page' => $page - 1]) : $links['first'];
     }
-    $links['last'] = $numberOfPages > 1 ? $this->getUrl(['page' => $numberOfPages]) : $links['first'];
 
     return $links;
   }
