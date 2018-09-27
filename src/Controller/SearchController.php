@@ -57,6 +57,7 @@ class SearchController {
           /** @var \TingEntity $object */
           $object = $collection->getPrimary_object();
           $cover = isset($covers[$collection->getId()]) ? $covers[$collection->getId()] : NULL;
+          $url = url('ting/object/' . $collection->getId(), ['absolute' => TRUE]);
           $data[] = [
             'id' => $collection->getId(),
             'title' => $collection->getTitle(),
@@ -82,7 +83,8 @@ class SearchController {
             'serieTitle' => $object->serieTitle,
             'subjects' => $object->subjects,
             'type' => $object->type,
-            'url' => $object->online_url,
+            'online_url' => $object->online_url,
+            'url' => $url,
           ];
         }
       }
@@ -107,6 +109,8 @@ class SearchController {
 
   /**
    * Extract query from ereolen.dk search url.
+   *
+   * Note: reol_search_conditions_callback uses $_REQUEST.
    */
   private function extractQueryFromUrl() {
     $parameters = drupal_get_query_parameters();
@@ -132,17 +136,23 @@ class SearchController {
    *
    * @param \TingClientSearchResult $result
    *   The search result.
+   * @param string $imageStyle
+   *   The image style.
    *
    * @return array
    *   The covers.
    */
-  private function getCovers(\TingClientSearchResult $result) {
+  private function getCovers(\TingClientSearchResult $result, $imageStyle = 'medium') {
     $ids = [];
     foreach ($result->collections as $collection) {
       $ids[] = $collection->getId();
     }
 
-    return array_map('file_create_url', ting_covers_get($ids));
+    return array_map(function ($uri) use ($imageStyle) {
+      $uri = str_replace('ting/covers', 'styles/' . $imageStyle . '/public/ting/covers', $uri);
+
+      return file_create_url($uri);
+    }, ting_covers_get($ids));
   }
 
   /**
