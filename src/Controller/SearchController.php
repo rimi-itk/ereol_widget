@@ -21,10 +21,10 @@ class SearchController {
 
       $query = $parameters['query'];
       $page = max(1, isset($parameters['page']) ? (int) $parameters['page'] : 0);
+      $results_per_page = min(100, max(1, isset($parameters['results_per_page']) ? (int) $parameters['results_per_page'] : 10));
 
       $keys = $query;
       $conditions = reol_search_conditions_callback($keys);
-      $results_per_page = 10;
 
       // Cf. ting_search_search_execute.
       $query = '(' . _ting_search_quote($keys) . ')';
